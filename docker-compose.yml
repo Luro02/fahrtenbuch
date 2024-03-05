@@ -1,0 +1,22 @@
+version: '3'
+services:
+  backend:
+    restart: always
+    build:
+      context: fahrtenbuch-server
+      dockerfile: Dockerfile
+    environment:
+      - ADDR=0.0.0.0:3000
+    volumes:
+      - ./data:/data
+    ports:
+      - "3000:3000"
+  frontend:
+    restart: always
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

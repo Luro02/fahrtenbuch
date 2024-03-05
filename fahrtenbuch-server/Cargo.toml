@@ -1,0 +1,40 @@
+[package]
+name = "fahrtenbuch-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+
+axum = "0.7"
+axum-login = "0.13"
+axum-messages = "0.3.0"
+
+tower-sessions = { version = "0.10.0", default-features = false }
+tower-sessions-sqlx-store = { version = "0.10.0", features = ["sqlite"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+async-trait = "0.1"
+http = "1"
+
+sqlx = { version = "0.7", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "sqlite",
+    "time",
+    "chrono",
+] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+
+pretty_env_logger = "0.5"
+log = { version = "0.4" }
+anyhow = "1.0"
+color-backtrace = "0.6"
+
+password-auth = "1.0.0"
+time = "0.3"
+tower = "0.4"
+thiserror = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+num-traits = "0.2"
