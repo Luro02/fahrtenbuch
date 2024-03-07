@@ -17,6 +17,8 @@ pub struct TripData {
     #[serde(default)]
     description: Option<String>,
     users: HashSet<UserId>,
+    #[serde(default)]
+    disable_start_check: bool,
 }
 
 async fn query_add_trip(db: &SqlitePool, data: TripData) -> anyhow::Result<()> {
@@ -32,7 +34,7 @@ async fn query_add_trip(db: &SqlitePool, data: TripData) -> anyhow::Result<()> {
         ));
     }
 
-    if data.start > 0 {
+    if data.start > 0 && !data.disable_start_check {
         let value: Option<(i64,)> = sqlx::query_as("select id from trips where end = ?")
             .bind(data.start)
             .fetch_optional(db)

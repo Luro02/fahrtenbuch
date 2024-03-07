@@ -258,12 +258,12 @@ class _HomeState extends State<Home> {
             largeColDivider,
             // Card(child: const Text('Hallo Welt!')),
             // colDivider,
-            SizedBox(
+            const SizedBox(
               height: 300.0,
               child: TripsViewer(),
             ),
             largeColDivider,
-            SizedBox(
+            const SizedBox(
               height: 300.0,
               child: ExpensesViewer(),
             ),
@@ -287,19 +287,17 @@ class _HomeState extends State<Home> {
                       fullscreenDialog: true,
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
-                      pageBuilder: (context, animation1, animation2) => Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Scaffold(
-                              appBar: AppBar(
-                                title: const Text('Neuen Eintrag erstellen'),
-                                centerTitle: false,
-                                leading: IconButton(
-                                  icon: const Icon(Icons.close),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
+                      pageBuilder: (context, animation1, animation2) =>
+                          Scaffold(
+                            appBar: AppBar(
+                              title: const Text('Neuen Eintrag erstellen'),
+                              centerTitle: false,
+                              leading: IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => Navigator.of(context).pop(),
                               ),
-                              body: AddTripForm(),
                             ),
+                            body: const AddTripForm(),
                           ))).then((_) => setState(() {}));
             },
             child: const Icon(Icons.add_location_alt_outlined),
@@ -312,19 +310,17 @@ class _HomeState extends State<Home> {
                       fullscreenDialog: true,
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,
-                      pageBuilder: (context, animation1, animation2) => Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Scaffold(
-                              appBar: AppBar(
-                                title: const Text('Neuen Betrag hinzufügen'),
-                                centerTitle: false,
-                                leading: IconButton(
-                                  icon: const Icon(Icons.close),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
+                      pageBuilder: (context, animation1, animation2) =>
+                          Scaffold(
+                            appBar: AppBar(
+                              title: const Text('Neuen Betrag hinzufügen'),
+                              centerTitle: false,
+                              leading: IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => Navigator.of(context).pop(),
                               ),
-                              body: AddExpenseForm(),
                             ),
+                            body: const AddExpenseForm(),
                           ))).then((_) => setState(() {}));
             },
             child: const Icon(Icons.euro_outlined),
