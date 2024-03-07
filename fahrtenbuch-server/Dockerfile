@@ -2,7 +2,7 @@ FROM rust:1.76.0-slim-bullseye AS build
 
 # View app name in Cargo.toml
 ARG APP_NAME="fahrtenbuch-server"
-ARG APP=/app/
+ARG APP=/build/
 
 WORKDIR /build
 
