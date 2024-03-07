@@ -69,34 +69,72 @@ class _LoginPageState extends State<LoginPage> {
                       ]),
                     )),
                 colDivider,
-                FilledButton.tonal(
-                  onPressed: () async {
-                    // check that the form data is valid:
-                    if (!(_formKey.currentState?.saveAndValidate() ?? false)) {
-                      // not valid, so we can't submit the form
-                      return;
-                    }
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    FilledButton.tonal(
+                      onPressed: () async {
+                        // check that the form data is valid:
+                        if (!(_formKey.currentState?.saveAndValidate() ??
+                            false)) {
+                          // not valid, so we can't submit the form
+                          return;
+                        }
 
-                    // if it is, we can access the form data:
-                    Map<String, dynamic> data = _formKey.currentState!.value;
+                        // if it is, we can access the form data:
+                        Map<String, dynamic> data =
+                            _formKey.currentState!.value;
 
-                    await ApiSession()
-                        .login(
-                            username: data["username"],
-                            password: data["password"])
-                        .then((value) async {
-                      await Navigator.pushReplacement<void, void>(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: widget.onLoginSuccess,
-                        ),
-                      );
-                    }, onError: (error) {
-                      _formKey.currentState?.fields['username']
-                          ?.invalidate(error);
-                    });
-                  },
-                  child: const Text('Anmelden'),
+                        await ApiSession()
+                            .login(
+                                username: data["username"],
+                                password: data["password"])
+                            .then((value) async {
+                          await Navigator.pushReplacement<void, void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: widget.onLoginSuccess,
+                            ),
+                          );
+                        }, onError: (error) {
+                          _formKey.currentState?.fields['username']
+                              ?.invalidate(error);
+                        });
+                      },
+                      child: const Text('Anmelden'),
+                    ),
+                    FilledButton.tonal(
+                      onPressed: () async {
+                        // check that the form data is valid:
+                        if (!(_formKey.currentState?.saveAndValidate() ??
+                            false)) {
+                          // not valid, so we can't submit the form
+                          return;
+                        }
+
+                        // if it is, we can access the form data:
+                        Map<String, dynamic> data =
+                            _formKey.currentState!.value;
+
+                        await ApiSession()
+                            .register(
+                                username: data["username"],
+                                password: data["password"])
+                            .then((value) async {
+                          await Navigator.pushReplacement<void, void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: widget.onLoginSuccess,
+                            ),
+                          );
+                        }, onError: (error) {
+                          _formKey.currentState?.fields['username']
+                              ?.invalidate(error);
+                        });
+                      },
+                      child: const Text('Registrieren'),
+                    ),
+                  ],
                 ),
               ],
             ),

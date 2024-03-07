@@ -24,7 +24,9 @@ COPY . .
 # load dependencies
 RUN flutter clean
 RUN flutter pub get
-# build is done in the run.sh file
+# run the build for the container, so the web sdk is downloaded
+RUN flutter build web --release
+# real build is done in the run.sh file
 
 ENV API_URL=http://127.0.0.1:3000
 
