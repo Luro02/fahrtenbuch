@@ -7,6 +7,7 @@ use axum_login::{
     AuthManagerLayerBuilder,
 };
 use axum_messages::MessagesManagerLayer;
+use log::debug;
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use time::Duration;
@@ -27,6 +28,11 @@ pub struct App {
 impl App {
     /// Connect to the database and run migrations if necessary.
     pub async fn connect(database: &str) -> anyhow::Result<Self> {
+        debug!(
+            "Opening database {} with App running in {}",
+            database,
+            std::env::current_dir().unwrap().display()
+        );
         let options = SqliteConnectOptions::from_str(database)?.create_if_missing(true);
 
         let db = SqlitePoolOptions::new()
