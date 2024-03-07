@@ -97,7 +97,9 @@ class _MonthlyCardState extends State<MonthlyCard> {
                 return DropdownMenuItem(
                   value: value,
                   onTap: () {
-                    currentMonth = value;
+                    setState(() {
+                      currentMonth = value;
+                    });
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

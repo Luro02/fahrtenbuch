@@ -44,6 +44,6 @@ create table if not exists expenses
 (
     id integer primary key not null,
     created_at datetime not null,
-    amount integer not null unique,
+    amount integer not null,
     description text
 );
