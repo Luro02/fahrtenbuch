@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use axum::Json;
 use axum_messages::Messages;
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 
@@ -12,6 +12,8 @@ use crate::response::ApiResult;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ExpenseData {
+    #[serde(default)]
+    created_at: Option<DateTime<Utc>>,
     amount: u64,
     #[serde(default)]
     description: Option<String>,
@@ -23,7 +25,7 @@ async fn query_add_expense(db: &SqlitePool, data: ExpenseData) -> anyhow::Result
         return Err(anyhow::anyhow!("No users provided"));
     }
 
-    let created_at = Utc::now();
+    let created_at = data.created_at.unwrap_or_else(Utc::now);
     sqlx::query("insert into expenses (created_at, amount, description) values (?, ?, ?)")
         .bind(created_at)
         .bind(data.amount as i64)

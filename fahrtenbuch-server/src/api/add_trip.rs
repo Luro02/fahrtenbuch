@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use axum::Json;
 use axum_messages::Messages;
 
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::SqlitePool;
 
@@ -12,6 +12,8 @@ use crate::response::ApiResult;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct TripData {
+    #[serde(default)]
+    created_at: Option<DateTime<Utc>>,
     start: i64,
     end: i64,
     #[serde(default)]
@@ -71,7 +73,7 @@ async fn query_add_trip(db: &SqlitePool, data: TripData) -> anyhow::Result<()> {
     }
 
     sqlx::query("insert into trips (created_at, start, end, description) values (?, ?, ?, ?)")
-        .bind(Utc::now())
+        .bind(data.created_at.unwrap_or_else(|| Utc::now()))
         .bind(data.start)
         .bind(data.end)
         .bind(data.description)
