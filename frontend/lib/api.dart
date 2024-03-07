@@ -27,7 +27,9 @@ extension on MemoryCache {
 }
 
 class ApiSession {
-  static const String _baseUrl = "http://127.0.0.1:3000";
+  static const String _baseUrl =
+      String.fromEnvironment('API_URL', defaultValue: 'http://127.0.0.1:3000');
+
   static final ApiSession _instance = ApiSession._internal();
 
   final session = Dio();
