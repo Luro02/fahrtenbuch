@@ -13,7 +13,7 @@ impl FromStr for Username {
     type Err = anyhow::Error;
 
     fn from_str(username: &str) -> Result<Self, Self::Err> {
-        Ok(Username(username.trim().to_lowercase()))
+        Ok(Self(username.trim().to_lowercase()))
     }
 }
 
@@ -59,7 +59,7 @@ where
         &self,
         buf: &mut <DB as HasArguments<'q>>::ArgumentBuffer,
     ) -> sqlx::encode::IsNull {
-        self.to_string().encode(buf)
+        self.0.encode_by_ref(buf)
     }
 }
 
@@ -71,7 +71,7 @@ where
         value: <DB as HasValueRef<'r>>::ValueRef,
     ) -> Result<Self, Box<dyn Error + Sync + Send>> {
         let string = String::decode(value)?;
-        Ok(Username::from_str(&string)?)
+        Ok(Self(string))
     }
 }
 
