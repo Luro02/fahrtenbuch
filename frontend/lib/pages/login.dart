@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -102,36 +103,46 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       child: const Text('Anmelden'),
                     ),
-                    FilledButton.tonal(
-                      onPressed: () async {
-                        // check that the form data is valid:
-                        if (!(_formKey.currentState?.saveAndValidate() ??
-                            false)) {
-                          // not valid, so we can't submit the form
-                          return;
-                        }
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        text: 'Registrieren',
+                        style: Theme.of(context)
+                            .primaryTextTheme
+                            .labelSmall
+                            ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () async {
+                            // check that the form data is valid:
+                            if (!(_formKey.currentState?.saveAndValidate() ??
+                                false)) {
+                              // not valid, so we can't submit the form
+                              return;
+                            }
 
-                        // if it is, we can access the form data:
-                        Map<String, dynamic> data =
-                            _formKey.currentState!.value;
+                            // if it is, we can access the form data:
+                            Map<String, dynamic> data =
+                                _formKey.currentState!.value;
 
-                        await ApiSession()
-                            .register(
-                                username: data["username"],
-                                password: data["password"])
-                            .then((value) async {
-                          await Navigator.pushReplacement<void, void>(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: widget.onLoginSuccess,
-                            ),
-                          );
-                        }, onError: (error) {
-                          _formKey.currentState?.fields['username']
-                              ?.invalidate(error);
-                        });
-                      },
-                      child: const Text('Registrieren'),
+                            await ApiSession()
+                                .register(
+                                    username: data["username"],
+                                    password: data["password"])
+                                .then((value) async {
+                              await Navigator.pushReplacement<void, void>(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: widget.onLoginSuccess,
+                                ),
+                              );
+                            }, onError: (error) {
+                              _formKey.currentState?.fields['username']
+                                  ?.invalidate(error);
+                            });
+                          },
+                      ),
                     ),
                   ],
                 ),
