@@ -1,21 +1,23 @@
 use std::iter;
 
+use num_traits::{AsPrimitive, NumAssign, PrimInt};
 use sqlx::{Encode, QueryBuilder};
 
-pub fn divide_equally(amount: u64, n: u64) -> impl Iterator<Item = u64> {
+pub fn divide_equally<N: PrimInt + AsPrimitive<usize>>(amount: N, n: N) -> impl Iterator<Item = N> {
     let part = amount / n;
     let remainder = amount % n;
 
-    iter::once(part + remainder).chain(iter::repeat(part).take((n - 1) as usize))
+    iter::once(part + remainder)
+        .chain(iter::repeat(part).take((n - N::one()).to_usize().unwrap_or_default()))
 }
 
 /// Divides the `numerator` into `N` parts, sized proportionally to the
 /// `proportion` values in place. Returns the remainder.
 ///
 /// The smaller the proportion, the smaller the amount that has to be paid.
-pub fn divide_proportionally(numerator: u64, proportion: &mut [u64]) -> u64 {
+pub fn divide_proportionally<N: PrimInt + NumAssign>(numerator: N, proportion: &mut [N]) -> N {
     let total = {
-        let mut total = 0;
+        let mut total = N::zero();
 
         for i in 0..proportion.len() {
             total += proportion[i];
@@ -24,12 +26,12 @@ pub fn divide_proportionally(numerator: u64, proportion: &mut [u64]) -> u64 {
         total
     };
 
-    if total == 0 {
+    if total == N::zero() {
         for i in 0..proportion.len() {
-            proportion[i] = 0;
+            proportion[i] = N::zero();
         }
 
-        return 0;
+        return N::zero();
     }
 
     let mut remainder = numerator;

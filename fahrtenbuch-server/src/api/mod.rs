@@ -9,8 +9,7 @@ mod list_expenses;
 mod list_trips;
 mod list_users;
 mod summary;
-
-pub mod schema;
+mod trip;
 
 pub fn router() -> Router<()> {
     Router::new()

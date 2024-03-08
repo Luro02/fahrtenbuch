@@ -10,7 +10,7 @@ use sqlx::{QueryBuilder, SqlitePool};
 
 use crate::auth::{AuthBackendError, AuthSession, UserId};
 use crate::response::ApiResult;
-use crate::utils::SqlBuilderExt;
+use crate::utils::{self, SqlBuilderExt};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListExpensesOptions {
@@ -38,6 +38,31 @@ pub struct Expense {
     pub amount: i64,
     pub description: Option<String>,
     pub users: HashSet<UserId>,
+}
+
+impl Expense {
+    /// Returns the amount of money the user has prepaid for the expense.
+    pub fn amount_for(&self, user_id: UserId) -> u64 {
+        if self.users.contains(&user_id) {
+            let iterator = utils::divide_equally(self.amount as u64, self.users.len() as u64);
+            let sorted_users = utils::sorted_vec(self.users.iter());
+
+            iterator
+                .zip(sorted_users)
+                .find_map(
+                    |(amount, uid)| {
+                        if uid == &user_id {
+                            Some(amount)
+                        } else {
+                            None
+                        }
+                    },
+                )
+                .unwrap_or_default()
+        } else {
+            0
+        }
+    }
 }
 
 async fn query_options(

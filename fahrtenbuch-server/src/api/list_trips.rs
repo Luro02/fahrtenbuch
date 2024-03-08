@@ -8,7 +8,7 @@ use serde::Deserialize;
 use sqlx::prelude::FromRow;
 use sqlx::{QueryBuilder, SqlitePool};
 
-use crate::api::schema::Trip;
+use crate::api::trip::Trip;
 use crate::auth::{AuthBackendError, AuthSession, UserId};
 use crate::response::ApiResult;
 use crate::utils::SqlBuilderExt;
@@ -74,6 +74,7 @@ async fn query_options(
     for entry in trip_entries {
         let users = trip_mapping.remove(&entry.id).unwrap_or_default();
         result.push(Trip {
+            id: entry.id,
             created_at: entry.created_at,
             start: entry.start as u64,
             end: entry.end as u64,

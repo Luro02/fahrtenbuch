@@ -9,6 +9,8 @@ use sqlx::FromRow;
 mod backend;
 pub use backend::*;
 
+use crate::username::Username;
+
 mod login;
 mod logout;
 mod register;
@@ -24,7 +26,7 @@ pub fn router() -> Router<()> {
 #[derive(Clone, Serialize, Deserialize, FromRow)]
 pub struct User {
     id: i64,
-    pub username: String,
+    pub username: Username,
     pub(super) password: String,
 }
 
@@ -59,6 +61,6 @@ impl AuthUser for User {
 // to authenticate requests with the backend.
 #[derive(Debug, Clone, Deserialize)]
 pub struct Credentials {
-    pub username: String,
+    pub username: Username,
     pub password: String,
 }

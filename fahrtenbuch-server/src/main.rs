@@ -2,6 +2,7 @@ mod api;
 mod app;
 mod auth;
 mod response;
+mod username;
 pub(crate) mod utils;
 
 use std::env;

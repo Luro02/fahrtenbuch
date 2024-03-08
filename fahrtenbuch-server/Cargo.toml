@@ -38,3 +38,7 @@ tower = "0.4"
 thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 num-traits = "0.2"
+
+[dev-dependencies]
+pretty_assertions = "1.4"
+map-macro = "0.3.0"

@@ -1,30 +1,29 @@
 use axum::Json;
-use axum::{http::StatusCode, response::IntoResponse};
 use axum_messages::Messages;
 
 use super::{AuthSession, Credentials};
-use crate::response;
+use crate::response::ApiResult;
 
 pub async fn login(
     mut auth_session: AuthSession,
     messages: Messages,
     Json(creds): Json<Credentials>,
-) -> impl IntoResponse {
-    let user = match auth_session.authenticate(creds.clone()).await {
+) -> ApiResult<Option<()>> {
+    let user = match auth_session.authenticate(creds).await {
         Ok(Some(user)) => user,
         Ok(None) => {
             messages.error("Invalid credentials");
 
-            return response::error("Invalid credentials".to_string()).into_response();
+            return ApiResult::error("Failed to login: Invalid credentials".to_string());
         }
-        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(_) => return ApiResult::error("Failed to login.".to_string()),
     };
 
-    if auth_session.login(&user).await.is_err() {
-        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    if let Err(err) = auth_session.login(&user).await {
+        return ApiResult::error(format!("Failed to login: {:?}", err));
     }
 
     messages.success(format!("Successfully logged in as {}", user.username));
 
-    response::empty().into_response()
+    ApiResult::empty()
 }

@@ -38,19 +38,3 @@ impl<T: Serialize, E: ToString> IntoResponse for ApiResult<T, E> {
         }
     }
 }
-
-// TODO: remove empty and error
-
-pub fn empty() -> impl IntoResponse {
-    axum::Json(serde_json::json!({
-        "success": true,
-        "data": null,
-    }))
-}
-
-pub fn error(message: String) -> impl IntoResponse {
-    axum::Json(serde_json::json!({
-        "success": false,
-        "message": message,
-    }))
-}

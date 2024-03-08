@@ -1,12 +1,10 @@
-use axum::response::IntoResponse;
-
 use super::AuthSession;
-use crate::response;
+use crate::response::ApiResult;
 
-pub async fn logout(mut auth_session: AuthSession) -> impl IntoResponse {
+pub async fn logout(mut auth_session: AuthSession) -> ApiResult<Option<()>> {
     if let Err(error) = auth_session.logout().await {
-        return response::error(format!("Internal error: {}", error)).into_response();
+        return ApiResult::error(format!("Internal error: {}", error));
     }
 
-    response::empty().into_response()
+    ApiResult::empty()
 }

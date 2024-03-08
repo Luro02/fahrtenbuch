@@ -5,6 +5,8 @@ use serde::Deserialize;
 use sqlx::SqlitePool;
 use tokio::task;
 
+use crate::username::Username;
+
 use super::{Credentials, User};
 
 // We use a type alias for convenience.
@@ -33,7 +35,7 @@ impl AuthBackend {
         &self.db
     }
 
-    pub async fn list_users(&self) -> Result<Vec<(UserId, String)>, AuthBackendError> {
+    pub async fn list_users(&self) -> Result<Vec<(UserId, Username)>, AuthBackendError> {
         let result = sqlx::query_as("select id, username from users")
             .fetch_all(&self.db)
             .await?;
@@ -41,7 +43,7 @@ impl AuthBackend {
         Ok(result)
     }
 
-    async fn get_user(&self, username: &str) -> Result<Option<User>, AuthBackendError> {
+    async fn get_user(&self, username: &Username) -> Result<Option<User>, AuthBackendError> {
         let user = sqlx::query_as("select * from users where username = ?")
             .bind(username)
             .fetch_optional(&self.db)
@@ -76,7 +78,7 @@ pub enum AuthBackendError {
     #[error(transparent)]
     TaskJoin(#[from] task::JoinError),
     #[error("The user '{0}' already exists")]
-    UserAlreadyExists(String),
+    UserAlreadyExists(Username),
 }
 
 #[async_trait]

@@ -10,6 +10,8 @@ use crate::utils;
 /// This represents an entry in the fahrtenbuch with all the relevant data.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Trip {
+    /// The unique identifier for the trip.
+    pub id: i64,
     /// The date when the entry was made.
     pub created_at: DateTime<Utc>,
     /// The start value of the odometer.
