@@ -32,12 +32,18 @@ class ExpenseForm extends StatefulWidget {
   State<ExpenseForm> createState() => _ExpenseFormState();
 }
 
+double? tryParseAmount(String amount) {
+  num? numValue = num.tryParse(amount.toString().trim().replaceFirst(',', '.'));
+
+  return numValue?.toDouble();
+}
+
 class _ExpenseFormState extends State<ExpenseForm> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _driverKey = GlobalKey<SelectDriverState>();
 
   String? moneyValidator<T>(T? value) {
-    num? numValue = num.tryParse(value?.toString() ?? "");
+    double? numValue = tryParseAmount(value.toString());
 
     if (numValue == null) {
       return "Bitte geben Sie eine ganze Zahl ein!";
@@ -113,12 +119,11 @@ class _ExpenseFormState extends State<ExpenseForm> {
 
               await ApiSession()
                   .addExpense(
-                      amount: double.parse(data["amount"]),
+                      amount: tryParseAmount(data["amount"])!,
                       description: data["description"],
                       users: _driverKey.currentState!.selectedItems)
                   .then((value) async {
-                // close the dialog?
-                // TODO: maybe keep it open for adding multiple trips?
+                // close the dialog
                 Navigator.pop(context);
               }, onError: (error) {
                 _formKey.currentState?.fields['description']?.invalidate(error);

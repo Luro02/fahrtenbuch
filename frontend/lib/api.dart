@@ -209,7 +209,8 @@ class ApiSession {
       required List<UserId> users}) async {
     debugPrint("Adding expense: $amount, $description, $users");
     await _post("add_expense", json: {
-      "amount": amount,
+      // conver to cents
+      "amount": (amount * 100).round(),
       "description": description,
       "users": users,
     });
