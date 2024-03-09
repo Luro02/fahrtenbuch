@@ -34,6 +34,8 @@ struct TripEntry {
     description: Option<String>,
 }
 
+const PRICE_PER_KM: f32 = 0.139;
+
 async fn query_options(
     db: &SqlitePool,
     options: ListTripsOptions,
@@ -81,6 +83,7 @@ async fn query_options(
             end: entry.end as u64,
             description: entry.description,
             users,
+            price: (((entry.end as u64 - entry.start as u64) as f32 * PRICE_PER_KM) * 100.0) as u64,
         });
     }
 

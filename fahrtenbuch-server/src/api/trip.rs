@@ -22,6 +22,8 @@ pub struct Trip {
     pub description: Option<String>,
     /// The associated users for the trip (who pays for the trip?)
     pub users: HashSet<UserId>,
+    /// The price of the trip.
+    pub price: u64,
 }
 
 impl Trip {

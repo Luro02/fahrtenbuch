@@ -87,6 +87,7 @@ class TripsViewer extends StatelessWidget {
               currentRow["start"],
               currentRow["end"],
               currentRow["end"] - currentRow["start"],
+              displayMoney(currentRow["price"]),
               currentRow["description"] ?? "",
               currentRow["users"]
                   .map((userId) => userMapping[userId])
@@ -98,6 +99,7 @@ class TripsViewer extends StatelessWidget {
             "Start",
             "Ende",
             "Kilometer",
+            "Kosten",
             "Beschreibung",
             "Nutzer"
           ],
@@ -127,7 +129,6 @@ class ExpensesViewer extends StatelessWidget {
             var userMapping = await ApiSession().listUsers();
 
             return [
-              currentRow["id"],
               DateHelper.display(DateTime.parse(currentRow["created_at"])),
               displayMoney(currentRow["amount"]),
               currentRow["description"] ?? "",
@@ -136,7 +137,7 @@ class ExpensesViewer extends StatelessWidget {
                   .join(", ")
             ];
           },
-          columns: const ["Id", "Datum", "Betrag", "Beschreibung", "Nutzer"],
+          columns: const ["Datum", "Betrag", "Beschreibung", "Nutzer"],
           numberOfRows: data!.length,
         );
       },
@@ -152,7 +153,7 @@ class Home extends StatefulWidget {
 }
 
 String displayMoney(int amount) {
-  return (amount / 100).toStringAsFixed(2) + " €";
+  return "${(amount / 100).toStringAsFixed(2)}€";
 }
 
 Map<int, dynamic> parseIntMap(Map<dynamic, dynamic> map) {
