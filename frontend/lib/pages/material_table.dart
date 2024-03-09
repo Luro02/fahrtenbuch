@@ -39,79 +39,15 @@ class StylingController with ChangeNotifier {
   }
 }
 
-extension FutureExtension<T> on Future<T> {
-  /// Checks if the future has returned a value, using a Completer.
-  bool isCompleted() {
-    var tweenCompleted = false;
-    whenComplete(() {
-      tweenCompleted = true;
-    });
-    return tweenCompleted;
-  }
-
-  /// Returns the value of the future, using a Completer.
-  /// If the future has not returned a value, it will return null.
-  T? value() {
-    if (this.isCompleted()) {
-      return this as T?;
-    }
-
-    return null;
-  }
-}
-
-const _columnsPowerOfTwo = 12;
-//const _rowCount = (1 << 31) - 1;
-
-/// Extends [TableColumn] to keep track of its original index regardless of where it happened to move to.
-class _MyTableColumn extends TableColumn {
-  _MyTableColumn({
-    required int index,
-    required super.width,
-    super.freezePriority = 0,
-    super.sticky = false,
-    super.flex = 0,
-    super.translation = 0,
-    super.minResizeWidth,
-    super.maxResizeWidth,
-  })  : key = ValueKey<int>(index),
-        // ignore: prefer_initializing_formals
-        index = index;
-
-  final int index;
-
-  @override
-  final ValueKey<int> key;
-
-  @override
-  _MyTableColumn copyWith({
-    double? width,
-    int? freezePriority,
-    bool? sticky,
-    int? flex,
-    double? translation,
-    double? minResizeWidth,
-    double? maxResizeWidth,
-  }) =>
-      _MyTableColumn(
-        index: index,
-        width: width ?? this.width,
-        freezePriority: freezePriority ?? this.freezePriority,
-        sticky: sticky ?? this.sticky,
-        flex: flex ?? this.flex,
-        translation: translation ?? this.translation,
-        minResizeWidth: minResizeWidth ?? this.minResizeWidth,
-        maxResizeWidth: maxResizeWidth ?? this.maxResizeWidth,
-      );
-}
-
 class MaterialTable extends StatefulWidget {
+  final double Function(int)? columnWidth;
   final List<String> columns;
   final Future<List<Object?>> Function(int row) future;
   final int numberOfRows;
 
   const MaterialTable(
       {super.key,
+      this.columnWidth,
       required this.future,
       required this.columns,
       required this.numberOfRows});
@@ -185,10 +121,10 @@ class _MaterialTableState extends State<MaterialTable>
   ) =>
       TableView.builder(
         // TODO: the first column was sticky?
-        columns: widget.columns.map((e) {
+        columns: widget.columns.indexed.map((element) {
           return TableColumn(
-              width: 64,
-              minResizeWidth: 64.0,
+              width: widget.columnWidth?.call(element.$1) ?? 64.0,
+              minResizeWidth: 32.0,
               flex: 1,
               // this will make the column expand to fill remaining width
               freezePriority: 1);
@@ -204,7 +140,7 @@ class _MaterialTableState extends State<MaterialTable>
             ),
           ),
         ),
-        rowHeight: 48.0 + 4 * Theme.of(context).visualDensity.vertical,
+        rowHeight: 48.0 + 1 * Theme.of(context).visualDensity.vertical,
         rowCount: widget.numberOfRows,
         rowBuilder: _rowBuilder,
         placeholderBuilder: _placeholderBuilder,
@@ -264,7 +200,6 @@ class _MaterialTableState extends State<MaterialTable>
       _pendingRows.add(row);
       widget.future(row).then((value) {
         _rows[row] = value;
-        // TODO: this might be a problem...
         setState(() {});
       }, onError: (error) {
         _rows[row] = List.filled(widget.columns.length, error);
@@ -287,16 +222,16 @@ class _MaterialTableState extends State<MaterialTable>
                 ? const EdgeInsets.only(right: 8.0)
                 : const EdgeInsets.only(left: 8.0),
             child: Align(
+              // fit: BoxFit.none,
               alignment: stylingController.useRTL.value
                   ? Alignment.centerRight
                   : Alignment.centerLeft,
               child: Text(
-                // TODO: that is a list???
                 '${_rows[row]![column]}',
                 style: textStyle,
-                overflow: TextOverflow.fade,
-                maxLines: 1,
-                softWrap: false,
+                overflow: TextOverflow.clip,
+                maxLines: 2,
+                softWrap: true,
               ),
             ),
           ),
@@ -322,17 +257,4 @@ class _MaterialTableState extends State<MaterialTable>
           ),
         ),
       );
-
-  static int? _getPowerOfTwo(int number) {
-    assert(!number.isNegative);
-    if (number == 0) return null;
-
-    for (int i = 0;; i++) {
-      if (number & 1 == 1) {
-        return ((number & ~1) >> 1) == 0 ? i : null;
-      }
-
-      number = (number & ~1) >> 1;
-    }
-  }
 }

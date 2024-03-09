@@ -1,219 +1,146 @@
-import 'package:fahrtenbuch/api.dart';
-import 'package:fahrtenbuch/api_widget.dart';
-import 'package:fahrtenbuch/pages/material_table.dart';
-import 'package:fahrtenbuch/pages/trip_form.dart';
-import 'package:fahrtenbuch/pages/expense_form.dart';
+import 'package:flutter/material.dart';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 
+import 'package:fahrtenbuch/pages/trip_form.dart';
+import 'package:fahrtenbuch/pages/expense_form.dart';
+import 'package:fahrtenbuch/pages/material_table.dart';
+import 'package:fahrtenbuch/utils.dart';
+import 'package:fahrtenbuch/api.dart';
+import 'package:fahrtenbuch/api_widget.dart';
+
+const mediumColDivider = SizedBox(height: 32);
+const smallColDivider = SizedBox(height: 16);
 const colDivider = SizedBox(height: 10);
 const largeColDivider = SizedBox(height: 30);
 const mediumPadding = 10.0;
 const largePadding = 0.0;
 
-class MonthlyCard extends StatefulWidget {
-  final Widget Function(DateTime, DateTime) child;
+class MonthSelector extends StatefulWidget {
+  final void Function(DateTime, DateTime) onChanged;
 
-  const MonthlyCard({super.key, required this.child});
+  const MonthSelector({super.key, required this.onChanged});
 
   @override
-  State<MonthlyCard> createState() => _MonthlyCardState();
+  State<MonthSelector> createState() => _MonthSelectorState();
 }
 
-class DateUtils {
-  static DateTime lastDayOfMonth(DateTime dateTime) {
-    return nextMonth(DateTime(dateTime.year, dateTime.month, 1))
-        .subtract(const Duration(seconds: 1));
-  }
-
-  static DateTime firstDayOfMonth(DateTime dateTime) {
-    return DateTime(dateTime.year, dateTime.month, 1);
-  }
-
-  static DateTime nextMonth(DateTime now) {
-    if (now.month == 12) {
-      return DateTime(now.year + 1, 1, now.day);
-    }
-
-    return DateTime(now.year, now.month + 1, now.day);
-  }
-
-  static DateTime previousMonth(DateTime now) {
-    if (now.month == 1) {
-      return DateTime(now.year - 1, 12, now.day);
-    }
-
-    return DateTime(now.year, now.month - 1, now.day);
-  }
-
-  static (DateTime, DateTime) monthRange(DateTime dateTime) {
-    var start = firstDayOfMonth(dateTime);
-    var end = lastDayOfMonth(start);
-
-    return (start, end);
-  }
-
-  static Map<String, DateTime> displayDates() {
-    var now = firstDayOfMonth(DateTime.now());
-
-    Map<String, DateTime> result = {};
-    for (int i = 0; i < 12; i++) {
-      result['${now.month.toString().padLeft(2, '0')}/${now.year}'] = now;
-
-      now = previousMonth(now);
-    }
-
-    return result;
-  }
-}
-
-class _MonthlyCardState extends State<MonthlyCard> {
-  DateTime currentMonth = DateUtils.displayDates().values.first;
+class _MonthSelectorState extends State<MonthSelector> {
+  DateTime? currentMonth;
 
   @override
   Widget build(BuildContext context) {
-    var range = DateUtils.monthRange(currentMonth);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: mediumPadding),
-      child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            colDivider,
-            DropdownButtonFormField2<DateTime>(
-              dropdownStyleData: const DropdownStyleData(
-                maxHeight: 200,
-              ),
-              menuItemStyleData: const MenuItemStyleData(
-                padding: EdgeInsets.zero,
-              ),
-              items: DateUtils.displayDates().entries.map((entry) {
-                String label = entry.key;
-                DateTime value = entry.value;
-                return DropdownMenuItem(
-                  value: value,
-                  onTap: () {
-                    setState(() {
-                      currentMonth = value;
-                    });
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(label),
-                  ),
-                );
-              }).toList(),
-              value: currentMonth,
-              // this needs to be added, otherwise the dropdown is disabled
-              onChanged: (value) {},
-              decoration: const InputDecoration(
-                labelText: 'Monat',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            colDivider,
-            Expanded(
-              flex: 1,
-              child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: largePadding),
-                  child: widget.child(range.$1, range.$2)),
-            ),
-          ]),
+    return DropdownButton2<DateTime>(
+      dropdownStyleData: const DropdownStyleData(
+        maxHeight: 200,
+      ),
+      menuItemStyleData: const MenuItemStyleData(
+        padding: EdgeInsets.zero,
+      ),
+      items: DateHelper.displayDates().entries.map((entry) {
+        String label = entry.key;
+        DateTime value = entry.value;
+        return DropdownMenuItem(
+          value: value,
+          onTap: () {
+            debugPrint("Tapped on $value");
+            var range = DateHelper.monthRange(value);
+            setState(() {
+              currentMonth = range.$1;
+            });
+            widget.onChanged(range.$1, range.$2);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(label),
+          ),
+        );
+      }).toList(),
+      value: currentMonth ?? DateHelper.displayDates().values.first,
+      // this needs to be added, otherwise the dropdown is disabled
+      onChanged: (value) {},
     );
   }
 }
 
 class TripsViewer extends StatelessWidget {
-  const TripsViewer({super.key});
+  final DateTime start;
+  final DateTime end;
+
+  const TripsViewer({super.key, required this.start, required this.end});
 
   @override
   Widget build(BuildContext context) {
-    return MonthlyCard(
-        child: (start, end) => ApiWidget(
-              future: ({required session}) =>
-                  session.listTrips(start: start, end: end),
-              builder: (context, data) {
-                debugPrint('data: $data');
+    return ApiWidget(
+      future: ({required session}) => session.listTrips(start: start, end: end),
+      builder: (context, data) {
+        debugPrint('data: $data');
 
-                int offset = 0;
-                return MaterialTable(
-                  future: (row) async {
-                    debugPrint("Fetching row $row");
-                    await Future.delayed(Duration(seconds: 1 + offset++));
-                    var currentRow = data[row];
-                    var userMapping = await ApiSession().listUsers();
+        return MaterialTable(
+          future: (row) async {
+            var currentRow = data[row];
+            var userMapping = await ApiSession().listUsers();
 
-                    return [
-                      currentRow["created_at"],
-                      currentRow["start"],
-                      currentRow["end"],
-                      currentRow["end"] - currentRow["start"],
-                      currentRow["description"] ?? "",
-                      currentRow["users"]
-                          .map((userId) => userMapping[userId])
-                          .join(", ")
-                    ];
-                  },
-                  columns: const [
-                    "Datum",
-                    "Start",
-                    "Ende",
-                    "Kilometer",
-                    "Beschreibung",
-                    "Nutzer"
-                  ],
-                  numberOfRows: data!.length,
-                );
-              },
-            ));
+            return [
+              DateHelper.display(DateTime.parse(currentRow["created_at"])),
+              currentRow["start"],
+              currentRow["end"],
+              currentRow["end"] - currentRow["start"],
+              currentRow["description"] ?? "",
+              currentRow["users"]
+                  .map((userId) => userMapping[userId])
+                  .join(", ")
+            ];
+          },
+          columns: const [
+            "Datum",
+            "Start",
+            "Ende",
+            "Kilometer",
+            "Beschreibung",
+            "Nutzer"
+          ],
+          numberOfRows: data!.length,
+        );
+      },
+    );
   }
 }
 
 class ExpensesViewer extends StatelessWidget {
-  const ExpensesViewer({super.key});
+  final DateTime start;
+  final DateTime end;
+
+  const ExpensesViewer({super.key, required this.start, required this.end});
 
   @override
   Widget build(BuildContext context) {
-    return MonthlyCard(
-        child: (start, end) => ApiWidget(
-              future: ({required session}) =>
-                  session.listExpenses(start: start, end: end),
-              builder: (context, data) {
-                debugPrint('data: $data');
+    return ApiWidget(
+      future: ({required session}) =>
+          session.listExpenses(start: start, end: end),
+      builder: (context, data) {
+        debugPrint('data: $data');
+        return MaterialTable(
+          future: (row) async {
+            var currentRow = data[row];
+            var userMapping = await ApiSession().listUsers();
 
-                int offset = 0;
-                return MaterialTable(
-                  future: (row) async {
-                    debugPrint("Fetching row $row");
-                    await Future.delayed(Duration(seconds: 1 + offset++));
-                    var currentRow = data[row];
-                    var userMapping = await ApiSession().listUsers();
-
-                    return [
-                      currentRow["id"],
-                      currentRow["created_at"],
-                      currentRow["amount"],
-                      currentRow["description"] ?? "",
-                      currentRow["users"]
-                          .map((userId) => userMapping[userId])
-                          .join(", ")
-                    ];
-                  },
-                  columns: const [
-                    "Id",
-                    "Datum",
-                    "Betrag",
-                    "Beschreibung",
-                    "Nutzer"
-                  ],
-                  numberOfRows: data!.length,
-                );
-              },
-            ));
+            return [
+              currentRow["id"],
+              DateHelper.display(DateTime.parse(currentRow["created_at"])),
+              displayMoney(currentRow["amount"]),
+              currentRow["description"] ?? "",
+              currentRow["users"]
+                  .map((userId) => userMapping[userId])
+                  .join(", ")
+            ];
+          },
+          columns: const ["Id", "Datum", "Betrag", "Beschreibung", "Nutzer"],
+          numberOfRows: data!.length,
+        );
+      },
+    );
   }
 }
 
@@ -224,54 +151,209 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
+String displayMoney(int amount) {
+  return (amount / 100).toStringAsFixed(2) + " €";
+}
+
+Map<int, dynamic> parseIntMap(Map<dynamic, dynamic> map) {
+  return Map<String, dynamic>.from(map)
+      .map((key, value) => MapEntry(int.parse(key), value));
+}
+
+class SummaryWidget extends StatefulWidget {
+  final DateTime start;
+  final DateTime end;
+
+  const SummaryWidget({super.key, required this.start, required this.end});
+
+  @override
+  State<SummaryWidget> createState() => _SummaryWidgetState();
+}
+
+class _SummaryWidgetState extends State<SummaryWidget> {
+  @override
+  Widget build(BuildContext context) {
+    return ApiWidget(
+        future: ({required session}) =>
+            session.summary(start: widget.start, end: widget.end),
+        builder: (context, summary) {
+          final username = ApiSession().username.capitalize();
+
+          debugPrint("Summary: $summary");
+          var balances = parseIntMap(summary!["balances"]);
+          var payments = parseIntMap(summary["payments"])
+              .map((key, value) => MapEntry(key, parseIntMap(value)));
+
+          List<List<dynamic>> paymentRows = [];
+          for (var entry in payments.entries) {
+            for (var subentry in entry.value.entries) {
+              paymentRows.add([entry.key, subentry.key, subentry.value]);
+            }
+          }
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  text: 'Hallo $username,',
+                  style: Theme.of(context).primaryTextTheme.headlineSmall,
+                ),
+              ),
+              smallColDivider,
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  children: [
+                    const TextSpan(text: "Du bist diesen Monat "),
+                    TextSpan(
+                      text: summary["distance"].toString(),
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .bodyMedium
+                          ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const TextSpan(text: " km gefahren."),
+                  ],
+                  style: Theme.of(context).primaryTextTheme.bodyMedium,
+                ),
+              ),
+              smallColDivider,
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  children: [
+                    const TextSpan(text: "Von insgesamt "),
+                    TextSpan(
+                      text: displayMoney(summary["total_amount"]),
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .bodyMedium
+                          ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const TextSpan(text: " hast du "),
+                    TextSpan(
+                      text: displayMoney(summary["prepaid"]),
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .bodyMedium
+                          ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                    ),
+                    const TextSpan(text: " ausgelegt."),
+                  ],
+                  style: Theme.of(context).primaryTextTheme.bodyMedium,
+                ),
+              ),
+              mediumColDivider,
+              SizedBox(
+                  height: 200,
+                  child: MaterialTable(
+                    future: (row) async {
+                      var entry = balances.entries.elementAt(row);
+                      var username =
+                          await ApiSession().usernameForId(entry.key);
+
+                      return [username, displayMoney(entry.value)];
+                    },
+                    columns: const ["Benutzer", "Kontostand"],
+                    numberOfRows: balances.length,
+                  )),
+              mediumColDivider,
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  text:
+                      "Um die Beträge auszugleichen, müssen folgende Zahlungen getätigt werden:",
+                  style: Theme.of(context).primaryTextTheme.bodyMedium,
+                ),
+              ),
+              smallColDivider,
+              SizedBox(
+                  height: 200,
+                  child: MaterialTable(
+                    future: (row) async {
+                      var currentRow = paymentRows[row];
+
+                      return [
+                        await ApiSession().usernameForId(currentRow[0]),
+                        await ApiSession().usernameForId(currentRow[1]),
+                        displayMoney(currentRow[2])
+                      ];
+                    },
+                    columns: const ["Von", "An", "Betrag"],
+                    numberOfRows: paymentRows.length,
+                  )),
+              largeColDivider,
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  text: "Alle Fahrten in diesem Monat:",
+                  style: Theme.of(context).primaryTextTheme.bodyMedium,
+                ),
+              ),
+              smallColDivider,
+              SizedBox(
+                height: 300,
+                child: TripsViewer(start: widget.start, end: widget.end),
+              ),
+              largeColDivider,
+              RichText(
+                textAlign: TextAlign.start,
+                text: TextSpan(
+                  text: "Alle Ausgaben in diesem Monat:",
+                  style: Theme.of(context).primaryTextTheme.bodyMedium,
+                ),
+              ),
+              smallColDivider,
+              SizedBox(
+                height: 300,
+                child: ExpensesViewer(start: widget.start, end: widget.end),
+              ),
+            ],
+          );
+        });
+  }
+}
+
 class _HomeState extends State<Home> {
+  DateTime start = DateHelper.monthRange(DateTime.now()).$1;
+  DateTime end = DateHelper.monthRange(DateTime.now()).$2;
+  Key _key = UniqueKey();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fahrtenbuch'),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: MonthSelector(
+              onChanged: (start, end) {
+                setState(() {
+                  this.start = start;
+                  this.end = end;
+                  _key = UniqueKey();
+                });
+              },
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            ApiWidget(
-                future: ({required session}) => session.summary(),
-                builder: (context, data) {
-                  var summary = data!;
-
-                  int distance = summary["distance"];
-                  int amount = summary["prepaid"];
-                  return ComponentDecoration(
-                    label: "Übersicht",
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: <Widget>[
-                          Text("Gefahrene Kilometer: $distance"),
-                          Text("Ausgelegtes Geld: ${amount / 100.0}€"),
-                          // TODO: hier eine Liste mit Menschen von denen man noch Geld bekommt?
-                        ],
-                      ),
-                    ),
-                  );
-                }),
-            largeColDivider,
-            // Card(child: const Text('Hallo Welt!')),
-            // colDivider,
-            const SizedBox(
-              height: 300.0,
-              child: TripsViewer(),
-            ),
-            largeColDivider,
-            const SizedBox(
-              height: 300.0,
-              child: ExpensesViewer(),
-            ),
-          ],
+          child: Padding(
+        key: _key,
+        padding: const EdgeInsets.all(32.0),
+        child: SummaryWidget(
+          start: start,
+          end: end,
         ),
-      ),
+      )),
       floatingActionButtonLocation: ExpandableFab.location,
       floatingActionButton: ExpandableFab(
         distance: 75,

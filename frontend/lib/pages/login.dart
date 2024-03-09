@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
+import 'package:fahrtenbuch/hyper_text.dart';
 import 'package:fahrtenbuch/utils.dart';
-
-import 'trip_form.dart';
-import '../api.dart';
+import 'package:fahrtenbuch/api.dart';
+import 'package:fahrtenbuch/pages/trip_form.dart';
 
 class LoginPage extends StatefulWidget {
   final Widget Function(BuildContext context) onLoginSuccess;
@@ -103,46 +102,37 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       child: const Text('Anmelden'),
                     ),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: 'Registrieren',
-                        style: Theme.of(context)
-                            .primaryTextTheme
-                            .labelSmall
-                            ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                decoration: TextDecoration.underline),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () async {
-                            // check that the form data is valid:
-                            if (!(_formKey.currentState?.saveAndValidate() ??
-                                false)) {
-                              // not valid, so we can't submit the form
-                              return;
-                            }
+                    rowDivider,
+                    HyperText(
+                      text: "Registrieren",
+                      onTap: () async {
+                        // check that the form data is valid:
+                        if (!(_formKey.currentState?.saveAndValidate() ??
+                            false)) {
+                          // not valid, so we can't submit the form
+                          return;
+                        }
 
-                            // if it is, we can access the form data:
-                            Map<String, dynamic> data =
-                                _formKey.currentState!.value;
+                        // if it is, we can access the form data:
+                        Map<String, dynamic> data =
+                            _formKey.currentState!.value;
 
-                            await ApiSession()
-                                .register(
-                                    username: data["username"],
-                                    password: data["password"])
-                                .then((value) async {
-                              await Navigator.pushReplacement<void, void>(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: widget.onLoginSuccess,
-                                ),
-                              );
-                            }, onError: (error) {
-                              _formKey.currentState?.fields['username']
-                                  ?.invalidate(error);
-                            });
-                          },
-                      ),
+                        await ApiSession()
+                            .register(
+                                username: data["username"],
+                                password: data["password"])
+                            .then((value) async {
+                          await Navigator.pushReplacement<void, void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: widget.onLoginSuccess,
+                            ),
+                          );
+                        }, onError: (error) {
+                          _formKey.currentState?.fields['username']
+                              ?.invalidate(error);
+                        });
+                      },
                     ),
                   ],
                 ),

@@ -1,3 +1,4 @@
+use std::cmp::Reverse;
 use std::collections::{HashMap, HashSet};
 
 use axum::extract::Query;
@@ -114,7 +115,7 @@ async fn query_options(
         });
     }
 
-    result.sort_by_cached_key(|element| element.created_at);
+    result.sort_by_cached_key(|element| Reverse(element.created_at));
 
     Ok(result)
 }

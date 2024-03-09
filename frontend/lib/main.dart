@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'pages/login.dart';
-import 'pages/home.dart';
-import 'constants.dart';
+import 'package:fahrtenbuch/pages/home.dart';
+import 'package:fahrtenbuch/pages/login.dart';
+import 'package:fahrtenbuch/constants.dart';
 
 void main() {
   runApp(const App());
