@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:fahrtenbuch/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
@@ -170,14 +171,26 @@ class ApiSession {
     return Future.value(r.map((v) => Map<String, dynamic>.from(v)).toList());
   }
 
-  // TODO: make this an endpoint in the real api?
-  // NOTE: we can not return null, because then the FutureBuilder waits forever for the data. Therefore we use an empty map as a default value.
+  // NOTE: we can not return null, because then the FutureBuilder waits forever for the data.
+  //       Therefore we use an empty map as a default value.
   Future<Map<String, dynamic>> lastTrip() async {
     debugPrint("Finding last trip");
+
     Map<String, dynamic>? lastTrip;
-    for (var trip in await listTrips()) {
-      if (lastTrip == null || trip["end"] > lastTrip["end"]) {
-        lastTrip = trip;
+    for (var date in DateHelper.displayDates().values) {
+      List<Map<String, dynamic>> trips = await listTrips(
+        start: DateHelper.firstDayOfMonth(date),
+        end: DateHelper.lastDayOfMonth(date),
+      );
+
+      for (var trip in trips) {
+        if (lastTrip == null || trip["end"] > lastTrip["end"]) {
+          lastTrip = trip;
+        }
+      }
+
+      if (trips.isNotEmpty) {
+        break;
       }
     }
 
