@@ -13,10 +13,6 @@ import 'package:flutter/material.dart';
 typedef UserId = int;
 
 extension on MemoryCache {
-  T getOrInsert<T>(String key, T value, {Duration? expiry}) {
-    return getOrInsertWith(key, () => value, expiry: expiry);
-  }
-
   T getOrInsertWith<T>(String key, T Function() f, {Duration? expiry}) {
     if (!contains(key)) {
       create(key, f(), expiry: expiry);
@@ -112,7 +108,7 @@ class ApiSession {
     _username = username;
     var userList = await listUsers();
     _userId = userList.keys.firstWhere(
-        (element) => userList[element] == username,
+        (element) => userList[element]?.toLowerCase() == username,
         orElse: () => -1);
 
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -156,7 +152,10 @@ class ApiSession {
     }, expiry: const Duration(minutes: 30));
   }
 
-  // TODO: decide on type for start and end
+  Future<String> usernameForId(UserId id) async {
+    return (await listUsers())[id]!;
+  }
+
   Future<List<Map<String, dynamic>>> listTrips(
       {DateTime? start, DateTime? end, List<UserId> users = const []}) async {
     debugPrint("Listing trips: $start, $end, $users");
@@ -231,9 +230,12 @@ class ApiSession {
   }
 
   Future<Map<String, dynamic>> summary(
-      {int? userId, Map<String, dynamic> options = const {}}) async {
-    var r =
-        await _get("summary", json: {"user": userId ?? _userId, ...options});
+      {int? userId, DateTime? start, DateTime? end}) async {
+    var r = await _get("summary", json: {
+      "user": userId ?? _userId,
+      "start": deserializeDateTime(start),
+      "end": deserializeDateTime(end),
+    });
 
     return Future.value(r);
   }
