@@ -5,7 +5,6 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:fahrtenbuch/hyper_text.dart';
 import 'package:fahrtenbuch/utils.dart';
 import 'package:fahrtenbuch/api.dart';
-import 'package:fahrtenbuch/pages/trip_form.dart';
 
 class LoginPage extends StatefulWidget {
   final Widget Function(BuildContext context) onLoginSuccess;
@@ -51,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                         FormBuilderValidators.minLength(5),
                       ]),
                     )),
-                colDivider,
+                smallColDivider,
                 Padding(
                     padding:
                         const EdgeInsets.symmetric(horizontal: largeSpacing),
@@ -67,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                         FormBuilderValidators.minLength(5),
                       ]),
                     )),
-                colDivider,
+                smallColDivider,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

@@ -1,91 +1,12 @@
-import 'package:fahrtenbuch/api.dart';
-import 'package:fahrtenbuch/api_widget.dart';
-
 import 'package:flutter/material.dart';
+
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
-const rowDivider = SizedBox(width: 20);
-const colDivider = SizedBox(height: 10);
-const tinySpacing = 3.0;
-const smallSpacing = 10.0;
-const largeSpacing = 40.0;
-const double cardWidth = 115;
-const double widthConstraint = 450;
-
-class ComponentDecoration extends StatefulWidget {
-  const ComponentDecoration({
-    super.key,
-    this.label,
-    required this.child,
-    this.tooltipMessage = '',
-  });
-
-  final String? label;
-  final Widget child;
-  final String? tooltipMessage;
-
-  @override
-  State<ComponentDecoration> createState() => _ComponentDecorationState();
-}
-
-class _ComponentDecorationState extends State<ComponentDecoration> {
-  final focusNode = FocusNode();
-
-  @override
-  Widget build(BuildContext context) {
-    var children = [];
-
-    if (widget.label != null) {
-      children.add(
-          Text(widget.label!, style: Theme.of(context).textTheme.titleSmall));
-    }
-
-    return RepaintBoundary(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: smallSpacing),
-        child: Column(
-          children: [
-            ...children,
-            ConstrainedBox(
-              constraints:
-                  const BoxConstraints.tightFor(width: widthConstraint),
-              // Tapping within the a component card should request focus
-              // for that component's children.
-              child: Focus(
-                focusNode: focusNode,
-                canRequestFocus: true,
-                child: GestureDetector(
-                  onTapDown: (_) {
-                    focusNode.requestFocus();
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Card(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5.0, vertical: 20.0),
-                      child: Center(
-                        child: widget.child,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import 'package:fahrtenbuch/api.dart';
+import 'package:fahrtenbuch/api_widget.dart';
+import 'package:fahrtenbuch/utils.dart';
 
 class ComponentGroupDecoration extends StatelessWidget {
   const ComponentGroupDecoration(
@@ -99,7 +20,7 @@ class ComponentGroupDecoration extends StatelessWidget {
     List<Widget> header = [];
     if (label != null) {
       header.add(Text(label!, style: Theme.of(context).textTheme.titleLarge));
-      header.add(colDivider);
+      header.add(smallColDivider);
     }
 
     // Fully traverse this component group before moving on
@@ -249,7 +170,7 @@ class _TripFormState extends State<TripForm> {
                       ]),
                     ));
               }),
-          colDivider,
+          smallColDivider,
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: largeSpacing),
               child: FormBuilderTextField(
@@ -265,7 +186,7 @@ class _TripFormState extends State<TripForm> {
                   FormBuilderValidators.numeric(),
                 ]),
               )),
-          colDivider,
+          smallColDivider,
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: largeSpacing),
               child: FormBuilderTextField(
@@ -278,12 +199,11 @@ class _TripFormState extends State<TripForm> {
                   FormBuilderValidators.minLength(3, allowEmpty: true),
                 ]),
               )),
-          colDivider,
-          // TODO: should use entire width?
+          smallColDivider,
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: largeSpacing),
               child: SelectDriver(key: _driverKey)),
-          colDivider,
+          smallColDivider,
           FilledButton.tonal(
             onPressed: () async {
               // check that the form data is valid:
@@ -305,7 +225,6 @@ class _TripFormState extends State<TripForm> {
               // if it is, we can access the form data:
               Map<String, dynamic> data = _formKey.currentState!.value;
 
-              // TODO: add selected driver to data
               await ApiSession()
                   .addTrip(
                       start: int.parse(data["start"]),
@@ -313,8 +232,7 @@ class _TripFormState extends State<TripForm> {
                       description: data["description"],
                       users: _driverKey.currentState!.selectedItems)
                   .then((value) async {
-                // close the dialog?
-                // TODO: maybe keep it open for adding multiple trips?
+                // close the dialog
                 Navigator.pop(context);
               }, onError: (error) {
                 _formKey.currentState?.fields['description']?.invalidate(error);

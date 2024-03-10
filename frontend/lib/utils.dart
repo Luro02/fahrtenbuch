@@ -1,5 +1,30 @@
 import 'package:flutter/material.dart';
 
+const mediumColDivider = SizedBox(height: 32);
+const smallColDivider = SizedBox(height: 16);
+const largeColDivider = SizedBox(height: 30);
+// const mediumPadding = 10.0;
+// const largePadding = 0.0;
+
+// ----
+
+const rowDivider = SizedBox(width: 20);
+
+const tinySpacing = 3.0;
+const smallSpacing = 10.0;
+const largeSpacing = 40.0;
+const double cardWidth = 115;
+const double widthConstraint = 450;
+
+String displayMoney(int amount) {
+  return "${(amount / 100).toStringAsFixed(2)}€";
+}
+
+Map<int, dynamic> parseIntMap(Map<dynamic, dynamic> map) {
+  return Map<String, dynamic>.from(map)
+      .map((key, value) => MapEntry(int.parse(key), value));
+}
+
 Widget loadFuture<T>(
     {required Future<T> future,
     required Widget Function(BuildContext context, T?) builder}) {

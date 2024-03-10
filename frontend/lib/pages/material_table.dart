@@ -41,6 +41,7 @@ class StylingController with ChangeNotifier {
 
 class MaterialTable extends StatefulWidget {
   final double Function(int)? columnWidth;
+  final double Function(int)? minColumnWidth;
   final List<String> columns;
   final Future<List<Object?>> Function(int row) future;
   final int numberOfRows;
@@ -48,6 +49,7 @@ class MaterialTable extends StatefulWidget {
   const MaterialTable(
       {super.key,
       this.columnWidth,
+      this.minColumnWidth,
       required this.future,
       required this.columns,
       required this.numberOfRows});
@@ -120,14 +122,13 @@ class _MaterialTableState extends State<MaterialTable>
     TablePlaceholderShade placeholderShade,
   ) =>
       TableView.builder(
-        // TODO: the first column was sticky?
         columns: widget.columns.indexed.map((element) {
           return TableColumn(
               width: widget.columnWidth?.call(element.$1) ?? 64.0,
-              minResizeWidth: 32.0,
+              minResizeWidth: widget.minColumnWidth?.call(element.$1) ?? 64.0,
               flex: 1,
               // this will make the column expand to fill remaining width
-              freezePriority: 1);
+              freezePriority: 0);
         }).toList(),
         style: TableViewStyle(
           dividers: TableViewDividersStyle(

@@ -1,164 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 
 import 'package:fahrtenbuch/pages/trip_form.dart';
 import 'package:fahrtenbuch/pages/expense_form.dart';
 import 'package:fahrtenbuch/pages/material_table.dart';
+import 'package:fahrtenbuch/pages/trips_viewer.dart';
+import 'package:fahrtenbuch/pages/expenses_viewer.dart';
 import 'package:fahrtenbuch/utils.dart';
 import 'package:fahrtenbuch/api.dart';
 import 'package:fahrtenbuch/api_widget.dart';
-
-const mediumColDivider = SizedBox(height: 32);
-const smallColDivider = SizedBox(height: 16);
-const colDivider = SizedBox(height: 10);
-const largeColDivider = SizedBox(height: 30);
-const mediumPadding = 10.0;
-const largePadding = 0.0;
-
-class MonthSelector extends StatefulWidget {
-  final void Function(DateTime, DateTime) onChanged;
-
-  const MonthSelector({super.key, required this.onChanged});
-
-  @override
-  State<MonthSelector> createState() => _MonthSelectorState();
-}
-
-class _MonthSelectorState extends State<MonthSelector> {
-  DateTime? currentMonth;
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButton2<DateTime>(
-      dropdownStyleData: const DropdownStyleData(
-        maxHeight: 200,
-      ),
-      menuItemStyleData: const MenuItemStyleData(
-        padding: EdgeInsets.zero,
-      ),
-      items: DateHelper.displayDates().entries.map((entry) {
-        String label = entry.key;
-        DateTime value = entry.value;
-        return DropdownMenuItem(
-          value: value,
-          onTap: () {
-            debugPrint("Tapped on $value");
-            var range = DateHelper.monthRange(value);
-            setState(() {
-              currentMonth = range.$1;
-            });
-            widget.onChanged(range.$1, range.$2);
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(label),
-          ),
-        );
-      }).toList(),
-      value: currentMonth ?? DateHelper.displayDates().values.first,
-      // this needs to be added, otherwise the dropdown is disabled
-      onChanged: (value) {},
-    );
-  }
-}
-
-class TripsViewer extends StatelessWidget {
-  final DateTime start;
-  final DateTime end;
-
-  const TripsViewer({super.key, required this.start, required this.end});
-
-  @override
-  Widget build(BuildContext context) {
-    return ApiWidget(
-      future: ({required session}) => session.listTrips(start: start, end: end),
-      builder: (context, data) {
-        debugPrint('data: $data');
-
-        return MaterialTable(
-          future: (row) async {
-            var currentRow = data[row];
-            var userMapping = await ApiSession().listUsers();
-
-            return [
-              DateHelper.display(DateTime.parse(currentRow["created_at"])),
-              currentRow["start"],
-              currentRow["end"],
-              currentRow["end"] - currentRow["start"],
-              displayMoney(currentRow["price"]),
-              currentRow["description"] ?? "",
-              currentRow["users"]
-                  .map((userId) => userMapping[userId])
-                  .join(", ")
-            ];
-          },
-          columns: const [
-            "Datum",
-            "Start",
-            "Ende",
-            "Kilometer",
-            "Kosten",
-            "Beschreibung",
-            "Nutzer"
-          ],
-          numberOfRows: data!.length,
-        );
-      },
-    );
-  }
-}
-
-class ExpensesViewer extends StatelessWidget {
-  final DateTime start;
-  final DateTime end;
-
-  const ExpensesViewer({super.key, required this.start, required this.end});
-
-  @override
-  Widget build(BuildContext context) {
-    return ApiWidget(
-      future: ({required session}) =>
-          session.listExpenses(start: start, end: end),
-      builder: (context, data) {
-        debugPrint('data: $data');
-        return MaterialTable(
-          future: (row) async {
-            var currentRow = data[row];
-            var userMapping = await ApiSession().listUsers();
-
-            return [
-              DateHelper.display(DateTime.parse(currentRow["created_at"])),
-              displayMoney(currentRow["amount"]),
-              currentRow["description"] ?? "",
-              currentRow["users"]
-                  .map((userId) => userMapping[userId])
-                  .join(", ")
-            ];
-          },
-          columns: const ["Datum", "Betrag", "Beschreibung", "Nutzer"],
-          numberOfRows: data!.length,
-        );
-      },
-    );
-  }
-}
+import 'package:fahrtenbuch/month_selector.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
-}
-
-String displayMoney(int amount) {
-  return "${(amount / 100).toStringAsFixed(2)}€";
-}
-
-Map<int, dynamic> parseIntMap(Map<dynamic, dynamic> map) {
-  return Map<String, dynamic>.from(map)
-      .map((key, value) => MapEntry(int.parse(key), value));
 }
 
 class SummaryWidget extends StatefulWidget {
