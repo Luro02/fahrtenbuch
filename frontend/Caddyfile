@@ -1,19 +1,20 @@
 {
     debug
+    default_bind 0.0.0.0
     log {
         format console
         level DEBUG
     }
 }
 
-http://localhost {
+:80 {
     handle_path /api/* {
         reverse_proxy http://backend:{$API_PORT}
     }
 
     handle {
+        rewrite / /index.html
         root * /srv/
-        try_files {path} /index.html
         file_server
         encode zstd gzip
     }
