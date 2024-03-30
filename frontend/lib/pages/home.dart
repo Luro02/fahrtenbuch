@@ -75,6 +75,15 @@ class _SummaryWidgetState extends State<SummaryWidget> {
                           ?.copyWith(
                               color: Theme.of(context).colorScheme.primary),
                     ),
+                    const TextSpan(text: " km von insgesamt "),
+                    TextSpan(
+                      text: summary["total_distance"].toString(),
+                      style: Theme.of(context)
+                          .primaryTextTheme
+                          .bodyMedium
+                          ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary),
+                    ),
                     const TextSpan(text: " km gefahren."),
                   ],
                   style: Theme.of(context).primaryTextTheme.bodyMedium,
