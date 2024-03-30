@@ -1,8 +1,9 @@
-#!/bin/sh -eu
+#!/usr/bin/env sh
+set -eu
 
-flutter build web --release --dart-define API_URL=${API_URL:-}
+flutter build web --release --dart-define API_URL=$API_URL
 
-chmod -R 755 /usr/share/nginx/html
-cp -r /app/build/web/* /usr/share/nginx/html/
+chmod -R 755 /srv
+cp -r /app/build/web/* /srv/
 
-nginx -g "daemon off;"
+caddy run

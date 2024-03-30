@@ -15,6 +15,7 @@ use tokio::net::ToSocketAddrs;
 use tokio::{signal, task::AbortHandle};
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
+use tower_sessions::cookie::Key;
 use tower_sessions::cookie::SameSite;
 use tower_sessions_sqlx_store::SqliteStore;
 
@@ -59,10 +60,15 @@ impl App {
                 .continuously_delete_expired(tokio::time::Duration::from_secs(60)),
         );
 
+        // TODO: this configures how cookies are set, adjust this to work with cors
+        // Generate a cryptographic key to sign the session cookie.
+        let key = Key::generate();
+
         let session_layer = SessionManagerLayer::new(session_store)
             .with_secure(true)
-            .with_same_site(SameSite::None)
-            .with_expiry(Expiry::OnInactivity(Duration::days(1)));
+            .with_same_site(SameSite::Strict)
+            .with_expiry(Expiry::OnInactivity(Duration::days(1)))
+            .with_signed(key);
 
         // Auth service.
         //
@@ -78,7 +84,7 @@ impl App {
             .merge(auth::router())
             .layer(MessagesManagerLayer)
             .layer(auth_layer)
-            .layer(CorsLayer::very_permissive())
+            .layer(CorsLayer::new().allow_credentials(true))
             .layer(TraceLayer::new_for_http());
 
         let listener = tokio::net::TcpListener::bind(addr).await?;

@@ -1,9 +1,9 @@
-FROM nginx:stable
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
 RUN apt-get update
-RUN apt-get install -y curl git unzip
+RUN apt-get install -y curl git unzip caddy
 
 # define variables
 ARG FLUTTER_SDK=/usr/local/flutter
@@ -27,8 +27,6 @@ RUN flutter pub get
 # run the build for the container, so the web sdk is downloaded
 RUN flutter build web --release
 # real build is done in the run.sh file
-
-ENV API_URL=http://127.0.0.1:3000
 
 RUN chmod +x /app/run.sh
 

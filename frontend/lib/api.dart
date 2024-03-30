@@ -24,9 +24,6 @@ extension on MemoryCache {
 }
 
 class ApiSession {
-  static const String _baseUrl =
-      String.fromEnvironment('API_URL', defaultValue: 'http://127.0.0.1:3000');
-
   static final ApiSession _instance = ApiSession._internal();
 
   final session = Dio();
@@ -44,6 +41,7 @@ class ApiSession {
   UserId get userId => _userId;
 
   ApiSession._internal() {
+    debugPrint("Base URL: $_baseUrl");
     session.interceptors.add(RetryInterceptor(
       dio: session,
       logPrint: debugPrint, // specify log function (optional)
@@ -63,6 +61,9 @@ class ApiSession {
     session.options.followRedirects = true;
     session.options.extra["withCredentials"] = true;
   }
+
+  String get _baseUrl => const String.fromEnvironment('API_URL',
+      defaultValue: 'http://127.0.0.1:3000');
 
   String? deserializeDateTime(DateTime? dateTime) {
     return dateTime != null ? "${dateTime.toIso8601String()}Z" : null;
@@ -96,13 +97,19 @@ class ApiSession {
 
   Future<dynamic> _get(String path, {Map<String, dynamic>? json}) {
     json?.removeWhere((key, value) => value == null);
+    debugPrint("GET: $_baseUrl/$path");
 
     return _request(
         (session) => session.get("$_baseUrl/$path", queryParameters: json));
   }
 
-  Future<dynamic> _post(String path, {Map<String, dynamic>? json}) => _request(
-      (session) => session.post("$_baseUrl/$path", data: jsonEncode(json)));
+  Future<dynamic> _post(String path, {Map<String, dynamic>? json}) {
+    json?.removeWhere((key, value) => value == null);
+    debugPrint("POST: $_baseUrl/$path");
+
+    return _request(
+        (session) => session.post("$_baseUrl/$path", data: jsonEncode(json)));
+  }
 
   Future<void> _postLogin(
       {required String username, required String password}) async {

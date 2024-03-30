@@ -1,0 +1,20 @@
+{
+    debug
+    log {
+        format console
+        level DEBUG
+    }
+}
+
+http://localhost {
+    handle_path /api/* {
+        reverse_proxy http://backend:{$API_PORT}
+    }
+
+    handle {
+        root * /srv/
+        try_files {path} /index.html
+        file_server
+        encode zstd gzip
+    }
+}

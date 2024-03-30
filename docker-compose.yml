@@ -17,7 +17,8 @@ services:
       context: frontend
       dockerfile: Dockerfile
     environment:
-      - API_URL=http://127.0.0.1:3000
+      - API_PORT=3000
+      - API_URL=http://localhost/api
     ports:
       - "80:80"
     depends_on:

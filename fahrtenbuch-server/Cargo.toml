@@ -7,11 +7,13 @@ edition = "2021"
 tokio = { version = "1", features = ["full"] }
 
 axum = "0.7"
-axum-login = "0.13"
-axum-messages = "0.3.0"
+axum-login = "0.15"
+axum-messages = "0.6.0"
 
-tower-sessions = { version = "0.10.0", default-features = false }
-tower-sessions-sqlx-store = { version = "0.10.0", features = ["sqlite"] }
+tower-sessions = { version = "0.12", default-features = false, features = [
+    "signed",
+] }
+tower-sessions-sqlx-store = { version = "0.12", features = ["sqlite"] }
 tower-http = { version = "0.5", features = ["cors", "trace"] }
 
 async-trait = "0.1"

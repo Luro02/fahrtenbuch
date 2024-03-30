@@ -28,6 +28,7 @@ pub struct SummaryResult {
     distance: u64,
     /// Amount of money the user prepaid for expenses.
     prepaid: u64,
+    /// Total amount of money spent on expenses in the given time frame.
     total_amount: u64,
     /// The distance driven by all users in the given time frame.
     total_distance: u64,
