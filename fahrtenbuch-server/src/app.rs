@@ -60,7 +60,6 @@ impl App {
                 .continuously_delete_expired(tokio::time::Duration::from_secs(60)),
         );
 
-        // TODO: this configures how cookies are set, adjust this to work with cors
         // Generate a cryptographic key to sign the session cookie.
         let key = Key::generate();
 
@@ -77,7 +76,6 @@ impl App {
         let backend = AuthBackend::new(self.db);
         let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer).build();
 
-        // TODO: make api::router listen to /api/... instead of /...
         let app = Router::new()
             .merge(api::router())
             .route_layer(login_required!(AuthBackend, login_url = "/login"))

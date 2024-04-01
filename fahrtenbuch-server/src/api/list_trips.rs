@@ -26,15 +26,32 @@ pub struct ListTripsOptions {
 }
 
 #[derive(Debug, Clone, FromRow)]
-struct TripEntry {
-    id: i64,
-    created_at: DateTime<Utc>,
-    start: i64,
-    end: i64,
-    description: Option<String>,
+pub struct TripEntry {
+    pub id: i64,
+    pub created_at: DateTime<Utc>,
+    pub start: i64,
+    pub end: i64,
+    pub description: Option<String>,
 }
 
 const PRICE_PER_KM: f32 = 0.139;
+
+pub async fn list_trip_users(
+    db: &SqlitePool,
+    trip_ids: impl Iterator<Item = i64>,
+    users: Vec<UserId>,
+) -> Result<Vec<(i64, UserId)>, AuthBackendError> {
+    let mut users_builder = QueryBuilder::new("select trip_id, user_id from trip_users");
+
+    users_builder
+        .push_in("trip_id", trip_ids)
+        .push_in("user_id", users);
+
+    Ok(users_builder
+        .build_query_as::<'_, (i64, i64)>()
+        .fetch_all(db)
+        .await?)
+}
 
 async fn query_options(
     db: &SqlitePool,
@@ -45,33 +62,26 @@ async fn query_options(
     if let Some(start) = options.start {
         builder
             .push(" where datetime(created_at, 'utc') >= ")
-            .push_bind(start);
+            .push_utc_bind(start);
     }
 
     if let Some(end) = options.end {
         builder
             .push(" and datetime(created_at, 'utc') <= ")
-            .push_bind(end);
+            .push_utc_bind(end);
     }
 
     let trip_entries: Vec<TripEntry> = builder.build_query_as().fetch_all(db).await?;
 
-    let mut users_builder = QueryBuilder::new("select trip_id, user_id from trip_users");
-
-    users_builder
-        .push_in("trip_id", trip_entries.iter().map(|entry| entry.id))
-        .push_in("user_id", options.users);
-
     // trip_id, users
-    let mut trip_mapping: HashMap<i64, HashSet<i64>> = users_builder
-        .build_query_as::<'_, (i64, i64)>()
-        .fetch_all(db)
-        .await?
-        .into_iter()
-        .fold(HashMap::new(), |mut map, (trip_id, user_id)| {
-            map.entry(trip_id).or_default().insert(user_id);
-            map
-        });
+    let mut trip_mapping: HashMap<i64, HashSet<i64>> =
+        list_trip_users(db, trip_entries.iter().map(|entry| entry.id), options.users)
+            .await?
+            .into_iter()
+            .fold(HashMap::new(), |mut map, (trip_id, user_id)| {
+                map.entry(trip_id).or_default().insert(user_id);
+                map
+            });
 
     let mut result = Vec::new();
     for entry in trip_entries {

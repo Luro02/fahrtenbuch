@@ -25,7 +25,7 @@ pub struct ListExpensesOptions {
 }
 
 #[derive(Debug, Clone, FromRow)]
-struct ExpenseEntry {
+pub struct ExpenseEntry {
     id: i64,
     created_at: DateTime<Utc>,
     amount: i64,
@@ -75,13 +75,13 @@ async fn query_options(
     if let Some(start) = options.start {
         builder
             .push(" where datetime(created_at, 'utc') >= ")
-            .push_bind(start);
+            .push_utc_bind(start);
     }
 
     if let Some(end) = options.end {
         builder
             .push(" and datetime(created_at, 'utc') <= ")
-            .push_bind(end);
+            .push_utc_bind(end);
     }
 
     let trip_entries: Vec<ExpenseEntry> = builder.build_query_as().fetch_all(db).await?;

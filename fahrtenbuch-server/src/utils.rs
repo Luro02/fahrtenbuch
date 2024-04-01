@@ -1,5 +1,6 @@
 use std::iter;
 
+use chrono::{DateTime, Utc};
 use num_traits::{AsPrimitive, NumAssign, PrimInt};
 use sqlx::{Encode, QueryBuilder};
 
@@ -60,6 +61,10 @@ pub trait SqlBuilderExt<'args, DB: sqlx::Database> {
     fn push_in<T>(&mut self, field: &str, values: impl IntoIterator<Item = T>) -> &mut Self
     where
         T: 'args + Encode<'args, DB> + Send + sqlx::Type<DB>;
+
+    fn push_utc_bind(&mut self, field: DateTime<Utc>) -> &mut Self
+    where
+        DateTime<Utc>: Encode<'args, DB> + Send + sqlx::Type<DB>;
 }
 
 impl<'args, DB: sqlx::Database> SqlBuilderExt<'args, DB> for QueryBuilder<'args, DB> {
@@ -87,5 +92,12 @@ impl<'args, DB: sqlx::Database> SqlBuilderExt<'args, DB> for QueryBuilder<'args,
         separated.push_unseparated(")");
 
         self
+    }
+
+    fn push_utc_bind(&mut self, field: DateTime<Utc>) -> &mut Self
+    where
+        DateTime<Utc>: Encode<'args, DB> + Send + sqlx::Type<DB>,
+    {
+        self.push("datetime(").push_bind(field).push(", 'utc')")
     }
 }

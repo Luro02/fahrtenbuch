@@ -63,7 +63,7 @@ class ApiSession {
   }
 
   String get _baseUrl => const String.fromEnvironment('API_URL',
-      defaultValue: 'http://127.0.0.1:3000');
+      defaultValue: 'https://fahrtenbuch.altenau.eu/api');
 
   String? deserializeDateTime(DateTime? dateTime) {
     return dateTime != null ? "${dateTime.toIso8601String()}Z" : null;
