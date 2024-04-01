@@ -145,6 +145,7 @@ async fn query_update_trip(db: &SqlitePool, data: TripData) -> anyhow::Result<()
         .bind(current_trip.start as i64)
         .bind(current_trip.end as i64)
         .bind(current_trip.description)
+        .bind(current_trip.id)
         .execute(db)
         .await?;
 
