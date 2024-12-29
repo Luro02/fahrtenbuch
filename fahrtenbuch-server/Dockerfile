@@ -33,4 +33,5 @@ USER appuser
 WORKDIR "/data"
 
 COPY --from=build /bin/server /bin/
+RUN chmod +x /bin/server
 CMD ["/bin/server"]
