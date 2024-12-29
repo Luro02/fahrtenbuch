@@ -16,6 +16,7 @@ RUN mkdir src \
 COPY migrations migrations
 COPY src src
 RUN cargo build --locked --release
+RUN chmod +x ./target/release/$APP_NAME
 RUN cp ./target/release/$APP_NAME /bin/server
 
 FROM debian:bullseye-slim AS final
@@ -33,5 +34,4 @@ USER appuser
 WORKDIR "/data"
 
 COPY --from=build /bin/server /bin/
-RUN chmod +x /bin/server
 CMD ["/bin/server"]
